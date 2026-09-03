@@ -8,8 +8,9 @@ primer minuto.
 
 ## 1. Qué es este proyecto y quién lo usa
 
-*(Lo escribes tú en la sesión: dos líneas. Qué es la página, para quién es y cada
-cuándo se usa.)*
+Es la página donde los operadores de maquinaria pesada registran el horómetro
+de cada máquina al terminar su turno. La usan los operadores, todos los días
+de trabajo.
 
 ## 2. De dónde sale cada cifra
 
@@ -17,7 +18,8 @@ Los datos de esta página viven en una tabla de Supabase llamada `registros`.
 Ninguna cifra ni ningún texto que se muestre se escribe a mano en el HTML: todo
 sale de esa tabla o de lo que la persona escriba en el formulario.
 
-*(En la sesión le agregas las columnas que acabes usando.)*
+Columnas en uso: `created_at` (fecha del registro, automática), `operador`
+(texto), `maquina` (texto) y `horometro` (número decimal).
 
 ## 3. Cómo quiero que trabajes aquí
 
