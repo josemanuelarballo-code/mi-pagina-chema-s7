@@ -2,47 +2,113 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Todavía no hay nada aquí</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Registro de horómetro</title>
 <style>
   :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh;
-    display: grid; place-items: center;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     background: #f4f6f8; color: #1a2027;
-    padding: 24px;
+    padding: 20px;
+    display: flex; justify-content: center;
   }
   @media (prefers-color-scheme: dark) {
     body { background: #121820; color: #e8eef5; }
     .caja { background: #1b232e !important; border-color: #2b3644 !important; }
-    code { background: #253040 !important; }
+    input { background: #253040 !important; color: #e8eef5 !important; border-color: #3a4656 !important; }
+    .aviso.ok { background: #16321f !important; color: #b6f0c4 !important; }
+    .aviso.error { background: #3a1e1e !important; color: #f5b8b8 !important; }
   }
   .caja {
+    width: 100%; max-width: 420px;
     background: #fff; border: 1px solid #dde3ea; border-radius: 14px;
-    padding: 34px; max-width: 480px; text-align: center;
-    box-shadow: 0 10px 30px -18px rgba(0,0,0,.3);
+    padding: 28px 22px; box-shadow: 0 10px 30px -18px rgba(0,0,0,.3);
   }
-  h1 { font-size: 22px; margin: 0 0 10px; }
-  p { margin: 0 0 14px; line-height: 1.55; }
-  p:last-child { margin-bottom: 0; }
-  code {
-    background: #eef2f6; padding: 2px 6px; border-radius: 4px;
-    font-family: ui-monospace, "Consolas", monospace; font-size: .9em;
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 22px; font-size: 14px; opacity: .75; line-height: 1.4; }
+  label {
+    display: block; font-size: 14px; font-weight: 600;
+    margin: 16px 0 6px;
   }
-  .chica { font-size: 14px; opacity: .75; }
+  input {
+    width: 100%; font-size: 16px; padding: 14px; border-radius: 10px;
+    border: 1px solid #ccd4dc; background: #fff; color: #1a2027;
+  }
+  input:focus { outline: 2px solid #2f6fed; outline-offset: 1px; }
+  button {
+    width: 100%; margin-top: 22px; padding: 15px; font-size: 16px; font-weight: 600;
+    border: none; border-radius: 10px; background: #2f6fed; color: #fff;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; }
+  .aviso {
+    margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 14px;
+    line-height: 1.4; display: none;
+  }
+  .aviso.ok { display: block; background: #eafaf0; color: #14602c; }
+  .aviso.error { display: block; background: #fdecec; color: #8a1f1f; }
 </style>
 </head>
 <body>
   <div class="caja">
-    <h1>Todavía no hay nada aquí</h1>
-    <p>Y eso es exactamente lo que tiene que decir hoy.</p>
-    <p>Si estás leyendo esto en tu propia liga, quiere decir que
-       <strong>tu repositorio, tu publicación y tu página ya funcionan</strong>.
-       Es todo lo que necesitabas antes de la sesión.</p>
-    <p class="chica">El martes le vas a pedir a Claude que reemplace esta página
-       por la tuya. Este archivo se llama <code>index.html</code> y es el único
-       que hay que cambiar.</p>
+    <h1>Registro de horómetro</h1>
+    <p class="sub">Anota la lectura del horómetro de la máquina al terminar tu turno.</p>
+
+    <form id="form-horometro">
+      <label for="operador">Nombre del operador</label>
+      <input id="operador" name="operador" type="text" autocomplete="name" required>
+
+      <label for="maquina">Máquina</label>
+      <input id="maquina" name="maquina" type="text" autocomplete="off" required>
+
+      <label for="horometro">Horómetro</label>
+      <input id="horometro" name="horometro" type="number" inputmode="decimal" step="0.1" min="0" required>
+
+      <button type="submit" id="btn-guardar">Guardar registro</button>
+
+      <div class="aviso ok" id="aviso-ok">Registro guardado correctamente.</div>
+      <div class="aviso error" id="aviso-error">No se pudo guardar. Revisa tu conexión e intenta otra vez.</div>
+    </form>
   </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const supabase = createClient(
+      "https://cgzurvdfkkjzjkwrlwao.supabase.co",
+      "sb_publishable_RlQczNksCd5WL4nqrDSfFg_6sLcxXYS"
+    );
+
+    const form = document.getElementById("form-horometro");
+    const btn = document.getElementById("btn-guardar");
+    const avisoOk = document.getElementById("aviso-ok");
+    const avisoError = document.getElementById("aviso-error");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      avisoOk.style.display = "none";
+      avisoError.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+
+      const { error } = await supabase.from("registros").insert({
+        operador: form.operador.value.trim(),
+        maquina: form.maquina.value.trim(),
+        horometro: parseFloat(form.horometro.value)
+      });
+
+      btn.disabled = false;
+      btn.textContent = "Guardar registro";
+
+      if (error) {
+        avisoError.style.display = "block";
+      } else {
+        avisoOk.style.display = "block";
+        form.reset();
+      }
+    });
+  </script>
 </body>
 </html>
